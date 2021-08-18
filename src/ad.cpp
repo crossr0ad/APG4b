@@ -1,18 +1,17 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define MAXLEN_INT 5
-#define MAXLEN_VEC 5
 // #define DEBUG
 
-map<string, int> intvar;
-map<string, vector<int>> vecvar;
-// vector<string> op_list = {"+", "-"};
-string buff;
+map<string, int> intvar;         // int型変数の、変数名と値の連想配列
+map<string, vector<int>> vecvar; // vec型変数の、変数名と値の連想配列
+string buff;                     // 常に先頭のトークンを格納する
 
 int int_exp();
 vector<int> vec_exp();
 
+// vector<int>を引数とし、その要素をホワイトスペース空きで出力する。
+// 前後には"[", "]"を出力する。
 void print_vec(vector<int> vec)
 {
     cout << "[ ";
@@ -27,7 +26,7 @@ int main()
 {
     int N;
     cin >> N;
-    int loop_num = 0;
+    auto loop_num = 0;
 
     while (loop_num++ < N)
     {
@@ -37,6 +36,9 @@ int main()
 #ifdef DEBUG
         cout << "main: command is " << command << endl;
 #endif
+
+        // intコマンドを処理する。
+        // int_exp()を呼び出し、返り値をint型変数の連想配列に登録する。
         if (command == "int")
         {
             string varname;
@@ -51,6 +53,9 @@ int main()
 #endif
             continue;
         }
+
+        // print_intコマンドを処理する。
+        // int_exp()を呼び出し、返り値を標準出力に出力する。
         if (command == "print_int")
         {
             cin >> buff;
@@ -58,6 +63,9 @@ int main()
             cout << int_exp() << endl;
             continue;
         }
+
+        // vecコマンドを処理する。
+        // vec_exp()を呼び出し、返り値をvec型変数の連想配列に登録する。
         if (command == "vec")
         {
             string varname;
@@ -69,9 +77,11 @@ int main()
 #ifdef DEBUG
             cout << "vector " << varname << " was added" << endl;
 #endif
-            // cin >> buff; // ";"を捨てる
             continue;
         }
+
+        // print_vecコマンドを処理する。
+        // vec_exp()を呼び出し、返り値を標準出力に出力する。
         if (command == "print_vec")
         {
             cin >> buff;
@@ -84,9 +94,13 @@ int main()
     }
 }
 
+// int項を処理する。
+// 数字かint型変数の参照かは、簡単にstoi()が失敗する（=トークンが数字列でない）かどうかで判定する。
+// 加えて、（デバッグのため）int型変数の連想配列に無い変数が参照された場合、エラーを表示し終了する。
 int int_term()
 {
     int value;
+
     try
     {
         value = stoi(buff);
@@ -109,9 +123,10 @@ int int_term()
     return value;
 }
 
+// int式を処理する。
 int int_exp()
 {
-    int value = int_term();
+    auto value = int_term();
     cin >> buff;
     while (buff == "+" || buff == "-")
     {
@@ -134,16 +149,20 @@ int int_exp()
     return value;
 }
 
+// vec項を処理する。
+// vec変数かvec値かは、先頭が"["かどうかで判定する。
 vector<int> vec_term()
 {
 #ifdef DEBUG
     cout << "vec_term: buff is " << buff << endl;
 #endif
 
-    // vec変数
+    // vec変数を処理する。
+    // vec型変数の仮想配列を参照し、得られたvectorを返す。
+    // （デバッグのため）連想配列に無い変数が参照された場合、エラーを表示し終了する。
     if (buff != "[")
     {
-        string varname = buff;
+        auto varname = buff;
         try
         {
             return vecvar.at(varname);
@@ -155,7 +174,8 @@ vector<int> vec_term()
         }
     }
 
-    // vec値
+    // vec値を処理する。
+    // 返り値用のvectorを宣言し、そこにint項の返り値をpush_back()で順次格納する。
     vector<int> value;
     for (; buff != "]"; cin >> buff)
     {
@@ -165,6 +185,8 @@ vector<int> vec_term()
     return value;
 }
 
+// vec式を処理する。
+// vectorの要素ごとの加算・減算のために、事前にlambda式を定義する。
 vector<int> vec_exp()
 {
     auto add = [](auto x, auto y)
@@ -187,8 +209,10 @@ vector<int> vec_exp()
         return x;
     };
 
-    vector<int> value = vec_term();
+    // vec値を処理する。
+    auto value = vec_term();
     cin >> buff;
+
     while (buff == "+" || buff == "-")
     {
         if (buff == "+")
